@@ -26,7 +26,14 @@ NUM_ROUNDS = 5
 TIMEOUT_SECONDS = 600
 EPSILON = 10 ** (-5)
 
-# similarity = ['single', 'multiple', 'averaged']
+# How the collaborators' weights are combined each round:
+#   "similarity" - similarity-weighted average (see SIMILARITY below)
+#   "average"    - plain unweighted average of the weights
+AGGREGATION = "similarity"
+
+# Similarity factor used when AGGREGATION == "similarity":
+#   "single"   - one factor per collaborator
+#   "multiple" - one factor per collaborator and per layer
 SIMILARITY = "single"
 
 compile_info = {

@@ -25,11 +25,39 @@ Hospitals can't pool medical images because of privacy rules, but a model traine
 2. **Start**: the manager publishes the model architecture and compile settings on-chain, then registers each hospital's address as a collaborator.
 3. **Each round** (5 by default):
    - each hospital trains locally for 10 epochs, uploads its weights to IPFS and sends the hash to the contract;
-   - the manager aggregates the weights and publishes the result. Instead of a plain FedAvg, it uses a **similarity-weighted average in weight space**: each hospital's contribution is weighted per layer by how close its weights are to the average (Frobenius norm), so outlier updates count less and local datasets of different sizes cause less variance;
+   - the manager aggregates the weights and publishes the result. By default it uses a **similarity-weighted average in weight space**: each hospital's contribution depends on how close its weights are to the average (Frobenius norm), so outlier updates count less. Plain averaging can be selected instead (`AGGREGATION` in `scripts/utils_manager.py`);
    - hospitals load the aggregated weights and start the next round.
 4. **Close**: the final global model is evaluated on held-out data with a classification report.
 
 Only the hashes go on-chain, and the weights stay on IPFS. This keeps transaction costs low while the chain still holds a tamper-evident record of every round.
+
+## Results
+
+[`scripts/offchain_benchmark.py`](scripts/offchain_benchmark.py) reruns the federated rounds without the blockchain and IPFS, which only transport the weights and don't change the learning. It uses the project's own CNN, hospital split and aggregation functions. Every setup gets the same training budget: 5 rounds × 10 local epochs. The test set has 768 images drawn from all three hospitals.
+
+| Setup | Test accuracy | Macro-F1 |
+|-------|-------------:|---------:|
+| Centralized: all data pooled (upper bound, no privacy) | 94.8% | 0.950 |
+| Hospital Alpha alone (1,792 images) | 85.3% | 0.839 |
+| Hospital Beta alone (1,075 images) | 77.6% | 0.702 |
+| Hospital Gamma alone (716 images) | 73.1% | 0.697 |
+| **Federated, plain average** | **94.4%** | **0.954** |
+| Federated, FedAvg (weighted by dataset size) | 94.4% | 0.945 |
+| Federated, similarity-weighted (per layer) | 93.9% | 0.941 |
+| Federated, similarity-weighted (single factor) | 92.6% | 0.931 |
+
+<img src="results/fl_accuracy.png" width="620" alt="Test accuracy per federated round for each aggregation strategy">
+
+**Takeaways**
+- **Federated learning matches centralized training (94.4% vs 94.8%) without any hospital sharing an image.** The smallest hospital goes from 73.1% on its own data to 94.4% in the federation.
+- **On this split, similarity weighting doesn't beat plain averaging.** The hospitals get a random (IID) share of the same dataset, so no participant is an outlier for the weighting to discount. Its intended benefit, robustness to noisy, skewed or malicious participants, needs a non-IID or adversarial setup to show. That is the next experiment.
+- Limits: a single run (seed 42) and an IID split. Differences of about 1 point between strategies are within run-to-run noise.
+
+Reproduce (TensorFlow ≥ 2.10, CPU is enough, about 1 h):
+```bash
+python scripts/load_dataset.py
+python scripts/offchain_benchmark.py      # writes results/fl_metrics.json and results/fl_accuracy.png
+```
 
 ## Dataset
 [Falah/Alzheimer_MRI](https://huggingface.co/datasets/Falah/Alzheimer_MRI) on Hugging Face: 5,120 training images in 4 classes (`NonDemented`, `VeryMildDemented`, `MildDemented`, `ModerateDemented`). It isn't stored in this repository. Download it with:
@@ -50,6 +78,7 @@ scripts/collaborator.py           hospitals: local training, upload/download of 
 scripts/utils_manager.py          CNN definition and the similarity-weighted aggregation
 scripts/utils_simulation.py       dataset loading, hospital split, paths
 scripts/load_dataset.py           downloads the MRI dataset
+scripts/offchain_benchmark.py     compares aggregation strategies without the blockchain
 ```
 
 ## Running the simulation

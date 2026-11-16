@@ -136,8 +136,9 @@ def federated_learning():
     # show the aggregated weights structure
     print_weights(aggregated_weights)
 
-    # for TEST purposes:    compare AGGREGATED and AVERAGED parameters performance
-    aggregated_weights = averaged_weights
+    # Plain averaging can be selected for comparison (see AGGREGATION in utils_manager.py)
+    if AGGREGATION == "average":
+        aggregated_weights = averaged_weights
 
     # sending the aggregated parameters on the IPFS and Blockchain
     aggregated_weights_bytes = weights_encoding(aggregated_weights)
