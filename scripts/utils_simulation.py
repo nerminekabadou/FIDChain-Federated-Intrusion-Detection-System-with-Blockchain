@@ -11,10 +11,12 @@ from sklearn.model_selection import train_test_split
 
 RANDOM_SEED = 42
 
-HOSPITALS_FILE_PATH = (
-    "C:\\Users\\Admin\\Desktop\\RT4\\FederatedLearningBlockchain\\fl_project\\off_chain\\hospitals.pkl"
+# Paths are relative to the project root and can be overridden with environment variables.
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+HOSPITALS_FILE_PATH = os.getenv(
+    "HOSPITALS_FILE_PATH", os.path.join(PROJECT_ROOT, "off_chain", "hospitals.pkl")
 )
-DATASET_PATH = "C:\\Users\\Admin\\Desktop\\RT4\\FederatedLearningBlockchain\\Database"
+DATASET_PATH = os.getenv("DATASET_PATH", os.path.join(PROJECT_ROOT, "Database"))
 DATASET_LIMIT = None
 
 LABELS = ["NonDemented", "VeryMildDemented", "MildDemented", "ModerateDemented"]
@@ -157,6 +159,7 @@ def get_hospitals():
 
 def set_hospitals(hospitals):
     serialized_hospitals = pickle.dumps(hospitals)
+    os.makedirs(os.path.dirname(HOSPITALS_FILE_PATH), exist_ok=True)
     with open(HOSPITALS_FILE_PATH, "wb") as file:
         file.write(serialized_hospitals)
 

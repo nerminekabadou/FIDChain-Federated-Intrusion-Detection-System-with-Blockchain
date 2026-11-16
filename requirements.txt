@@ -1,0 +1,9 @@
+# Python 3.9 (see README). GPU training needs CUDA 11.2 + cuDNN 8.1.
+eth-brownie>=1.19,<2
+tensorflow<2.11
+opencv-python
+numpy<1.24
+pandas==1.5.3
+scikit-learn
+ipfshttpclient==0.8.0a2
+datasets

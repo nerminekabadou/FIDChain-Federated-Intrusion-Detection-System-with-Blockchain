@@ -1,24 +1,31 @@
-from datasets import load_dataset
+"""Download the Alzheimer MRI dataset from Hugging Face into ./Database.
+
+Images are stored in one folder per class (NonDemented, VeryMildDemented,
+MildDemented, ModerateDemented), which is the layout expected by
+utils_simulation.create_dataset().
+"""
+
 import os
 
-# Load the dataset
-dataset = load_dataset("Falah/Alzheimer_MRI")
+from datasets import load_dataset
 
-# Define the base path for your project
-base_path = r"C:\Users\Admin\Desktop\RT4\FederatedLearningBlockchain\Database"
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_PATH = os.getenv("DATASET_PATH", os.path.join(PROJECT_ROOT, "Database"))
+LABELS = ["NonDemented", "VeryMildDemented", "MildDemented", "ModerateDemented"]
 
-# Define the labels and ensure directories exist
-labels = ["NonDemented", "VeryMildDemented", "MildDemented", "ModerateDemented"]
-for label in labels:
-    os.makedirs(os.path.join(base_path, label), exist_ok=True)
 
-# Save images to their respective folders
-for idx, item in enumerate(dataset['train']):
-    label = item['label']  # Label index
-    image = item['image']  # Image data (PIL Image object)
-    label_name = labels[label]  # Map label index to label name
-    # Save the image using a unique name (index-based)
-    image.save(os.path.join(base_path, label_name, f"image_{idx}.jpg"))
-    print(f"Saved: {label_name}/image_{idx}.jpg")
+def main():
+    dataset = load_dataset("Falah/Alzheimer_MRI")
 
-print("Dataset downloaded and organized successfully!")
+    for label in LABELS:
+        os.makedirs(os.path.join(BASE_PATH, label), exist_ok=True)
+
+    for idx, item in enumerate(dataset["train"]):
+        label_name = LABELS[item["label"]]
+        item["image"].save(os.path.join(BASE_PATH, label_name, f"image_{idx}.jpg"))
+
+    print(f"Saved {idx + 1} images to {BASE_PATH}")
+
+
+if __name__ == "__main__":
+    main()
