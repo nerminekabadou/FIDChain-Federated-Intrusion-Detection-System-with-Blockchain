@@ -1,4 +1,6 @@
-# Federated Learning on Blockchain: Alzheimer's MRI Classification
+# FIDChain: Federated Learning on Blockchain
+
+> **Research project.** FIDChain (*Federated Intrusion Detection on Blockchain*) is a privacy-preserving federated learning framework in which an Ethereum smart contract coordinates the training instead of a trusted central server. It targets collaborative tasks where participants can't share their raw data, such as **intrusion detection** across organisations or **medical imaging** across hospitals. This repository contains the implementation applied to **Alzheimer's MRI classification**.
 
 Three simulated hospitals train a shared CNN that classifies brain MRI scans into four stages of Alzheimer's disease, **without ever sharing patient images**. An Ethereum smart contract coordinates the federated learning rounds, and model weights are exchanged through IPFS.
 
